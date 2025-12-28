@@ -1,12 +1,12 @@
-function locResult=ShSim_Calc(data,sim_config)
+function locResult = ShSim_Calc(data, sim_config)
 % ShSim_Calc
-% 0.1.1.1
+% 0.1.1.2
 % ShSim_Calc
 % The Shogun Tracion Performance Calculation core
 % Autor: Jonas Rosengren
 %
 % Format:
-%   r=ShSim_Calc(data)
+%   r = ShSim_Calc(data)
 %
 % Description
 %   This function is managing the calculation of the route.
@@ -17,6 +17,7 @@ function locResult=ShSim_Calc(data,sim_config)
 %       track_file
 %       doOptimise
 %       parameters (each field name, value)
+%   sim_config
 %
 % Output data
 %   struct r (output data)
@@ -145,7 +146,7 @@ if ~isfield(data, 'doOptimise')
     data.doOptimise = 0;
 end
 if nargin > 2
-    p = data.sections<=number_of_sections;
+    p = data.sections <= number_of_sections;
     if ~any(data.sections == 0)
         data.sections=data.sections(p);
     end
@@ -164,16 +165,16 @@ if ~isempty(logfileref)
         if data.doOptimise > 0
             fprintf(logfileref, [pad('', 10), pad('Optimise:', 13), 'method: ', num2str(data.doOptimise), newline]);
         else
-            fprintf(logfileref, [pad('', 10), pad('Optimise:', 13), 'None' newline]);
+            fprintf(logfileref, [pad('', 10), pad('Optimise:', 13), 'None', newline]);
         end
     elseif size(data.doOptimise, 2) == 2
-        fprintf(logfileref,[pad('', 10), pad('Optimise:', 13), 'method: ' num2str(data.doOptimise(1)) '\tSpeed relation: ' num2str(data.doOptimise(2)) newline]);
+        fprintf(logfileref, [pad('', 10), pad('Optimise:', 13), 'method: ', num2str(data.doOptimise(1)), '\tSpeed relation: ', num2str(data.doOptimise(2)), newline]);
     elseif size(data.doOptimise, 2) == 3
-        fprintf(logfileref, [pad('', 10), pad('Optimise:', 13), 'method:' num2str(data.doOptimise(1)) '\tV2/V1: ' num2str(data.doOptimise(2)) '\tV1/vBrk: ' num2str(data.doOptimise(3)) newline]);
+        fprintf(logfileref, [pad('', 10), pad('Optimise:', 13), 'method:', num2str(data.doOptimise(1)), '\tV2/V1: ', num2str(data.doOptimise(2)), '\tV1/vBrk: ', num2str(data.doOptimise(3)), newline]);
     else
-        fprintf(logfileref,[pad('', 10), pad('Optimise:', 13), 'None' newline]);
+        fprintf(logfileref,[pad('', 10), pad('Optimise:', 13), 'None', newline]);
     end
-    fprintf(logfileref, [pad('', 10), pad('Delta-T:', 13), num2str(sim_config.delta_T * 1000) newline]);
+    fprintf(logfileref, [pad('', 10), pad('Delta-T:', 13), num2str(sim_config.delta_T * 1000), newline]);
 end
 clear locResult;
 

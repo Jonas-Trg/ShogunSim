@@ -26,7 +26,7 @@ switch vehicle_data.MaxSpdUnit
 end
 vcl.vMax = vehicle_data.vMax / spd_scale;
 vcl.unitLength = replaceifempty(vehicle_data.vMax, 0);
-vcl.max_acc = replaceifempty(vehicle_data.max_acc, 0);
+vcl.max_acc = replaceifempty(vehicle_data.max_acc, inf);
 vcl.jerkrateT = replaceifempty(vehicle_data.jerkrateT, inf);
 vcl.AccMethod = vehicle_data.AccMethod - 1;
 vcl.retard_max = replaceifempty(vehicle_data.retard_max, inf);
