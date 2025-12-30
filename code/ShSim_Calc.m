@@ -185,7 +185,7 @@ if data.echo
     hwb = waitbar(0, '');
     ps = hwb.Position;
     ps(2) = ps(2) + 80;
-    s = ['Calculating route: ', newline, trackdata(data.sections(1)).from_station, ' - ', trackdata(data.sections(end)).to_station];
+    s = ['Calculating route: ', newline, routedata.name];
     hwb0 = waitbar(0, s, 'Position', ps);
     hwb0.Position = ps;
 else

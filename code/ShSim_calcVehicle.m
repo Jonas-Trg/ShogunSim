@@ -12,7 +12,10 @@ vcl.nMotors = vehicle_data.nMotors;
 vcl.nAxDrive = vehicle_data.nAxDrive;
 vcl.nAxTrail = vehicle_data.nAxTrail;
 vcl.notes = vehicle_data.notes;
-
+ws = vehicle_data.wheelsize;
+for i1 = 1:size(ws, 2)
+    ws{i1} = ws{i1} / 1000; % wheel diameter in metre
+end
 % Dynamics
 switch vehicle_data.MaxSpdUnit
     case 1 % km/h
@@ -22,7 +25,7 @@ switch vehicle_data.MaxSpdUnit
     case 3 % m/s
         spd_scale = 1;
     case 4 % Hz
-        spd_scale = vehicle_data.gearRatio * vehicle_data.nPoles * 1000 / (vehicle_data.wheelsize{vehicle_data.ws_selection} * pi * 2);
+        spd_scale = vehicle_data.gearRatio * vehicle_data.nPoles / (ws{vehicle_data.ws_selection} * pi * 2);
 end
 vcl.vMax = vehicle_data.vMax / spd_scale;
 vcl.unitLength = replaceifempty(vehicle_data.vMax, 0);
@@ -99,8 +102,8 @@ vcl.maxTE = vehicle_data.maxTE;
 vcl.maxDBE = vehicle_data.maxDBE;
 vcl.maxPwrTEbase = vehicle_data.maxPwrTEbase;
 vcl.maxPwrDBEbase = vehicle_data.maxPwrDBEbase;
-vcl.maxRatePwrTE = replaceifempty(vehicle_data.maxRatePwrTE, 0);
-vcl.maxRatePwrDBE = replaceifempty(vehicle_data.maxRatePwrDBE, 0);
+vcl.maxRatePwrTE = replaceifempty(vehicle_data.maxRatePwrTE, inf);
+vcl.maxRatePwrDBE = replaceifempty(vehicle_data.maxRatePwrDBE, inf);
 
 vcl.vBasePwr = vcl.maxPwrTEbase / vcl.maxTE;
 vcl.vBasePwr2 = replaceifempty(vehicle_data.vBasePwr2 / spd_scale, inf);
@@ -186,11 +189,11 @@ vcl.gearRatio = vehicle_data.gearRatio;
 vcl.gearLoss0 = replaceifempty(vehicle_data.gearLoss0, 0);
 vcl.gearLoss1 = replaceifempty(vehicle_data.gearLoss1, 0);
 vcl.gearLoss2 = replaceifempty(vehicle_data.gearLoss2, 0);
-vcl.wheelsize = vehicle_data.wheelsize;
+vcl.wheelsize = ws;
 vcl.ws_mass = vehicle_data.ws_mass;
 vcl.ws_rotMass = vehicle_data.ws_rotMass;
 for i1 = 1:3
-    vcl.wheelsize{i1} = replaceifempty(vcl.wheelsize{i1} / 1000, vcl.wheelsize{1});
+    vcl.wheelsize{i1} = replaceifempty(vcl.wheelsize{i1}, vcl.wheelsize{1});
     vcl.ws_mass{i1} = replaceifempty(vcl.ws_mass{i1}, 0);
     vcl.ws_rotMass{i1} = replaceifempty(vcl.ws_rotMass{i1}, 0);
 end
@@ -213,12 +216,12 @@ vcl.swFqConv = replaceifempty(vehicle_data.swFqConv, 0);
 vcl.CONV_RLoss = replaceifempty(vehicle_data.CONV_RLoss, 0) / 1000;
 vcl.CONV_FLoss = replaceifempty(vehicle_data.CONV_FLoss, 0);
 vcl.CONV_FRLoss = replaceifempty(vehicle_data.CONV_FRLoss, 0) / 1e6;
-vcl.CONV_FixLoss = vehicle_data.CONV_FixLoss;
+vcl.CONV_FixLoss = vehicle_data.CONV_FixLoss / 100;
 
 vcl.INV_RLoss = replaceifempty(vehicle_data.INV_RLoss, 0) / 1000;
 vcl.INV_FLoss = replaceifempty(vehicle_data.INV_FLoss, 0);
 vcl.INV_FRLoss = replaceifempty(vehicle_data.INV_FRLoss, 0) / 1e6;
-vcl.INV_FixLoss = vehicle_data.INV_FixLoss;
+vcl.INV_FixLoss = vehicle_data.INV_FixLoss / 100;
 vcl.asyncSwFqInvMotor = replaceifempty(vehicle_data.asyncSwFqInvMotor, 0);
 vcl.asyncSwFqInvGenerator = replaceifempty(vehicle_data.asyncSwFqInvGenerator, 0);
 n = size(vehicle_data.MotorPulseData, 1);

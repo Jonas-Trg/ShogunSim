@@ -188,7 +188,7 @@ while (~mdone) && (time < sim_config.maxT + start_time)
     % Get slope force
     F_slope = get_slope(dist, slopedata) * tvehicle.statmassLoad * 9.81 / 1000;
     % Target speed
-    v_target = min([routedata.track(section_index, 2), tvehicle.vMax, tRoute.ATO_SpdMax / 3.6]) - tRoute.ATO_SpdMgn / 3.6;
+    v_target = min([routedata.track(section_index, 2), tvehicle.vMax, tRoute.ATO_SpdMax]) - tRoute.ATO_SpdMgn;
     % Target force in new point
     [F_target, T_start, T_end, mode] = GetTargetTractionForce(TE_old, Acc_old, V_old, v_target, tvehicle, F_slope, force_resistance, dT, limitation);
     if tvehicle.notchMethod > 0
@@ -324,8 +324,8 @@ while (~mdone) && (time < sim_config.maxT + start_time)
         section_index = section_index + 1;
         if section_index < last_section_index % We have not yet reached the next station. From this point we need to go backwards.
             endSection = routedata.track(section_index + 1, 1) * 1000;
-            min1 = min([routedata.track(section_index, 2) / 3.6, tvehicle.vMax]) - tRoute.ATO_SpdMgn / 3.6;
-            min2 = min([routedata.track(section_index - 1, 2) / 3.6, tvehicle.vMax]) - tRoute.ATO_SpdMgn / 3.6;
+            min1 = min([routedata.track(section_index, 2), tvehicle.vMax]) - tRoute.ATO_SpdMgn;
+            min2 = min([routedata.track(section_index - 1, 2), tvehicle.vMax]) - tRoute.ATO_SpdMgn;
             if (V_new > min1) && (min1 < min2) % only if the speed limit in next section is lower we have already exceeded this, we need to go backwards
                 index = index - 1;
                 % Indicate that we are dealing with the speed reduction
@@ -340,7 +340,7 @@ while (~mdone) && (time < sim_config.maxT + start_time)
                     index = index + tindex;
                 end
                 clear tempresult;
-                V_new = min([routedata.track(section_index, 2) / 3.6, tvehicle.vMax]) - tRoute.ATO_SpdMgn / 3.6;
+                V_new = min([routedata.track(section_index, 2), tvehicle.vMax]) - tRoute.ATO_SpdMgn;
                 time = time - ttime - dT;
                 
                 dist = routedata.track(section_index, 1) * 1000;
@@ -520,8 +520,8 @@ while V0_new < min([timedata(index, 3), tvehicle.vMax])
     % Get the force induced by the current slope
     F_slope = get_slope(dist0, slopedata) * tvehicle.statmassLoad * 9.81 / 1000;
     % Calculate the acceleration (retardation)
-    v_target = max([tRoute.ATO_InitBrkSpd / 3.6, V0_new]) + tRoute.ATO_SpdMgn / 3.6;
-    v_target = min([routedata.track(backtrackSection, 2), tvehicle.vMax, v_target, tRoute.ATO_SpdMax / 3.6]) - tRoute.ATO_SpdMgn / 3.6;
+    v_target = max([tRoute.ATO_InitBrkSpd, V0_new]) + tRoute.ATO_SpdMgn;
+    v_target = min([routedata.track(backtrackSection, 2), tvehicle.vMax, v_target, tRoute.ATO_SpdMax]) - tRoute.ATO_SpdMgn;
     % v_target=min([routedata.track(backtrackSection,2)/3.6 tvehicle.vMax tRoute.ATO_SpdMax/3.6])-tRoute.ATO_SpdMgn/3.6;
     
     [F_target, T_start, T_end] = ShSim_TargetBE(TE_old ,Acc_old, V0_new, v_target, tvehicle, F_slope, force_resistance, dT);
@@ -571,7 +571,7 @@ while V0_new < min([timedata(index, 3), tvehicle.vMax])
     tempresult (tindex, 27) = TE_average;
     tempresult (tindex, 28) = nan;
     tempresult (tindex, 29) = nan;
-    tempresult (tindex, 30) = routedata.track(backtrackSection, 8) * tvehicle.davies_c2(tvehicle.nUnits) * (V0_new*3.6)^2;     %Tunnel resistance;
+    tempresult (tindex, 30) = routedata.track(backtrackSection, 8) * tvehicle.davies_c2(tvehicle.nUnits) * (V0_new * 3.6)^2;     %Tunnel resistance;
     tempresult (tindex, 31) = notch;
     tempresult (tindex, 32) = force_curve;
     tempresult (tindex, 33) = force_tunnel;
@@ -748,7 +748,7 @@ elseif tvehicle.notchMethod == 2 % Speed based
     end
     F_target = max([min([F_target1, TE_old + maxStep]), TE_old - maxStep]);
 elseif tvehicle.notchMethod == 3 % controller
-    a_target = (v_target - speed) / tvehicle.notchDeltaVAcc * 3.6 * tvehicle.notchMaxAcc;
+    a_target = (v_target - speed) / tvehicle.notchDeltaVAcc * tvehicle.notchMaxAcc;
     F_target = a_target * tvehicle.totMass + F_slope + F_res;
     F_Max = ShSim_maxTE(inf, tvehicle, speed, limitation);
     F_Min = ShSim_maxBE(tvehicle, speed, F_slope, F_res);
@@ -923,7 +923,7 @@ else
     d_cut = 0;
 end
 
-[DBE_effort, ULine, ULink, ILine, BRPow, iMotor, IS, mSlip, fMode, ESPow, PropLoss]=...
+[DBE_effort, ULine, ULink, ILine, BRPow, iMotor, IS, mSlip, fMode, ESPow, PropLoss] = ...
     ShSim_Efforts(TE_ref, vehicle, speed, routedata, simulation, limitation); %#ok<ASGLU>
 
 for ii = lnRD + 1:size(r, 1)
@@ -1091,7 +1091,7 @@ return % doThermal
 function [Coast, F_target] = ATO_control(Coasting, speed, F_target_in, troutedata, dist, tvehicle, F_slope, do_echo, dT)
 if Coasting
     F_target = min(0, F_target_in);
-    if speed <= troutedata.ATO_vCoastEnd / 3.6
+    if speed <= troutedata.ATO_vCoastEnd
         Coast = 0;
     elseif dist > troutedata.ATO_dCoastEnd * 1000
         Coast = 0;
@@ -1100,7 +1100,7 @@ if Coasting
     end
 else
     Coast = 0;
-    if speed >= troutedata.ATO_vCoastStart / 3.6
+    if speed >= troutedata.ATO_vCoastStart
         Coast = 1;
         if do_echo
             fprintf(['Coasting at: ', num2str(dist / 1000, '%4.1f'), ' km\n'])
@@ -1114,8 +1114,8 @@ else
         end
     end
     
-    if speed > troutedata.ATO_V1 / 3.6
-        ATO_force = max([0, (1 - (speed * 3.6 - troutedata.ATO_V1) / (troutedata.ATO_V2 - troutedata.ATO_V1)) * tvehicle.maxPwrTEbase / speed + F_slope * troutedata.ATO_cGrad]);
+    if speed > troutedata.ATO_V1
+        ATO_force = max([0, (1 - (speed - troutedata.ATO_V1) / (troutedata.ATO_V2 - troutedata.ATO_V1)) * tvehicle.maxPwrTEbase / speed + F_slope * troutedata.ATO_cGrad]);
         F_target = min([F_target_in, ATO_force]); % + F_slope*troutedata.ATO_cGrad
     else
         F_target = F_target_in;
@@ -1157,7 +1157,7 @@ end
 
 if track(8) %tunnel
     force_davies = (tvehicle.davies_a + tvehicle.davies_b * speed * 3.6 + track(8) * tvehicle.davies_c2(tvehicle.nUnits) * (speed * 3.6)^2);
-    tunnel_resistance = track(8) * tvehicle.davies_c2 * (speed*3.6)^2 - tvehicle.davies_c1 * (speed*3.6)^2;
+    tunnel_resistance = track(8) * tvehicle.davies_c2 * (speed * 3.6)^2 - tvehicle.davies_c1 * (speed * 3.6)^2;
 else %not tunnel
     force_davies = (tvehicle.davies_a + tvehicle.davies_b * (wind + speed) * 3.6 + tvehicle.davies_c1(tvehicle.nUnits) * ((wind + speed) * 3.6)^2);
     tunnel_resistance = 0;

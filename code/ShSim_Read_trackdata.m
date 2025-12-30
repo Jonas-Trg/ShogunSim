@@ -57,12 +57,21 @@ else
     return
 end
 
+switch route_data.ATOSpeedUnitSel
+    case 1 %
+        spd_scale = 3.6;
+    case 2
+        spd_scale = 2.2369;
+    otherwise
+        spd_scale = 1;
+end
+
 if isfield(route_data, 'speedLimits')
     n = size(route_data.speedLimits, 1);
     speeds(n, 2) = 0;
     for i1 = 1:n
         speeds(i1, 1) = route_data.speedLimits{i1, 1};
-        speeds(i1, 2) = route_data.speedLimits{i1, 2};
+        speeds(i1, 2) = route_data.speedLimits{i1, 2} / spd_scale;
     end
 else
     dlg = errordlg(['The trackdata file ''', route_data.FileName, ''' has no field ''Speedlimits'''], mfilename);
@@ -136,9 +145,9 @@ for i1 = 1:nStations
     stations{i1, 1} = stations{i1, 1} + stations{i1, 4} * TrainLength;
     original_track(i1, 1) = stations{i1, 1};
     dwellTime(i1) = stations{i1, 3};
-    temp = seconds(duration(stations{i1, 5}));
-    if ~isnan(temp)
-        departureTime(i1) = temp;
+    T_dur = seconds(duration(stations{i1, 5}));
+    if ~isnan(T_dur)
+        departureTime(i1) = T_dur;
     end
 end
 
@@ -159,8 +168,8 @@ end
 i1 = 1;
 while i1 < size(speeds, 1)
     i1 = i1 + 1;
-    if speeds(i1,2) >= speeds(i1 - 1, 2) % if new speed is higher...
-        speeds(i1, 1) = speeds(i1, 1) + TrainLength; % train lentgh will be added
+    if speeds(i1, 2) >= speeds(i1 - 1, 2) % if new speed is higher...
+        speeds(i1, 1) = speeds(i1, 1) + TrainLength; % train length will be added
         if i1 < size(speeds, 1)
             if speeds(i1, 1) > speeds(i1 + 1, 1) && speeds(i1, 2) > speeds(i1 + 1, 2)
                 if speeds(i1 + 1, 2) > speeds(i1 - 1, 2)
@@ -381,13 +390,13 @@ end
 route.name = route_data.name;
 route.purpose = route_data.purpose;
 if route_data.VoltageSel >= 3
-    temp = 1000;
+    uScale = 1000;
 else
-    temp = 1;
+    uScale = 1;
 end
-route.USupply = replaceNAN(route_data.USupply * temp, 1500);
-route.UMotor = replaceNAN(route_data.UL_Motoring * temp, route.USupply);
-route.URegen = replaceNAN(route_data.UL_Regen * temp, route.USupply);
+route.USupply = replaceNAN(route_data.USupply * uScale, 1500);
+route.UMotor = replaceNAN(route_data.UL_Motoring * uScale, route.USupply);
+route.URegen = replaceNAN(route_data.UL_Regen * uScale, route.USupply);
 route.Regen_percent = replaceNAN(route_data.Regen_percent, 1);
 route.Regen_current = replaceNAN(route_data.Regen_current, inf);
 route.Start_direction = replaceNAN(route_data.Start_direction, 90) * 2 * pi / 360;
@@ -398,16 +407,16 @@ route.relHumidity = replaceNAN(route_data.relHumidity, 0);
 route.headWind = replaceNAN(route_data.headWind, 0);
 route.Track_Guage = replaceNAN(route_data.Track_Guage, 1435);
 
-route.ATO_SpdMgn = replaceNAN(route_data.ATO_SpdMgn, 0);
-route.ATO_SpdMax = replaceNAN(route_data.ATO_SpdMax, inf);
-route.ATO_InitBrkSpd = replaceNAN(route_data.ATO_InitBrkSpd, inf);
-route.ATO_TBC = replaceNAN(route_data.ATO_TBC, 1);
+route.ATO_SpdMgn = replaceNAN(route_data.ATO_SpdMgn, 0) / spd_scale;
+route.ATO_SpdMax = replaceNAN(route_data.ATO_SpdMax, inf) / spd_scale;
+route.ATO_InitBrkSpd = replaceNAN(route_data.ATO_InitBrkSpd, inf) / spd_scale;
+route.ATO_TBC = replaceNAN(route_data.ATO_TBC, 100) / 100;
 route.ATO_dCoastStart = replaceNAN(route_data.ATO_dCoastStart, inf);
 route.ATO_dCoastEnd = replaceNAN(route_data.ATO_dCoastEnd, inf);
-route.ATO_vCoastStart = replaceNAN(route_data.ATO_vCoastStart, inf);
-route.ATO_vCoastEnd = replaceNAN(route_data.ATO_vCoastEnd, 0);
-route.ATO_V1 = replaceNAN(route_data.ATO_V1, inf);
-route.ATO_V2 = replaceNAN(route_data.ATO_V2, inf);
+route.ATO_vCoastStart = replaceNAN(route_data.ATO_vCoastStart, inf) / spd_scale;
+route.ATO_vCoastEnd = replaceNAN(route_data.ATO_vCoastEnd, 0) / spd_scale;
+route.ATO_V1 = replaceNAN(route_data.ATO_V1, inf) / spd_scale;
+route.ATO_V2 = replaceNAN(route_data.ATO_V2, inf) / spd_scale;
 route.ATO_cGrad = replaceNAN(route_data.ATO_cGrad, 0);
 
 route.tunnelNames = tunnelNames;

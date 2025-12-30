@@ -124,7 +124,7 @@ while doCalc ~= 0
 
     % Inverter
     if isempty(vehicle.INV_FixLoss)
-        b=find(freq > vehicle.FreqInvGenerator, 1, 'last');
+        b = find(freq > vehicle.FreqInvGenerator, 1, 'last');
         if isempty(b)
             swFreq = vehicle.asyncSwFqInvGenerator;
         else

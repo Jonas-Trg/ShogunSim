@@ -44,8 +44,8 @@ if size(type,2)==2
         w=(scrsz(3)-5)*type(2)-5;
         h=(scrsz(4)-45)*type(1)-85;
     else
-        w=type(2);
-        h=type(1);
+        w=80*type(2);
+        h=80*type(1);
     end
 else
     w=560;
