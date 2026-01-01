@@ -879,9 +879,13 @@ end
 speed = r(lnRD, 3);
 TE_ref = r(lnRD, 4);
 
+% there is data to be merged...
 if lnRD > 1 && size(reversedata, 1) > 1
+    % acceleration at end of time data
     a_end = min([(r(lnRD, 3) - r(lnRD - 1, 3)) / dt, TE_ref / vehicle.totMass]);
+    % retardation of brake in the beginning of reversedata
     a_brk = min([(reversedata(1, 3) - reversedata(2, 3)) / dt, -reversedata(1, 4) / vehicle.totMass]);
+    % basically if the delta acceleration is greater than what can be accomplished in one sample
     if (a_end > vehicle.jerkrateT * dt || a_brk > vehicle.jerkrateB * dt) && (a_end + a_brk > (vehicle.jerkrateT + vehicle.jerkrateB) * dt) && (a_end > 0)
         x = lnRD;
         b = lnRD;

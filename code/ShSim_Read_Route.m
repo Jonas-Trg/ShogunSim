@@ -1,5 +1,5 @@
-function [sections, route, profile, curves] = ShSim_Read_trackdata(fileName, vehicle, sim_config)
-% function ShSim_Read_trackdata
+function [sections, route, profile, curves] = ShSim_Read_Route(fileName, vehicle, sim_config)
+% function ShSim_Read_Route
 % 0.1.1.1
 %
 % Description
@@ -26,7 +26,7 @@ if exist(fileName,'file')
     load(fileName, 'route_data');
     [sections, route, profile, curves] = read_route(route_data, vehicle, sim_config);
 end
-return % ShSim_Read_trackdata
+return % ShSim_Read_Route
 
 function [sections, route, track_profile, curves] = read_route(route_data, theVehicle, sim_config)
 %This to ensure the function doesn't crash at 'return'
@@ -42,7 +42,7 @@ end
 
 if isfield(route_data, 'stations')
     stations = route_data.stations;
-    for i1 = 1:size(stations)
+    for i1 = 1:size(stations, 1)
         stations{i1, 1} = stations{i1, 1};
         stations{i1, 3} = stations{i1, 3};
         if isempty(stations{i1, 4})
@@ -347,7 +347,7 @@ while i1 < size(stations, 1)
     else
         trackdata(i1).from_station = stations{i1, 2}; %#ok<AGROW>
         trackdata(i1).to_station = stations{i1 + 1, 2}; %#ok<AGROW>
-        trackdata(i1).dwellTime = dwellTime(i1); %#ok<AGROW>
+        trackdata(i1).dwellTime = dwellTime(i1 + 1); %#ok<AGROW>
         trackdata(i1).departure = departureTime(i1) * 24 * 3600; %#ok<AGROW>
         trackdata(i1).arrival = departureTime(i1 + 1) * 24 * 3600 - dwellTime(i1 + 1); %#ok<AGROW>
         trackdata(i1).stopPos = [stations{i1, 5}, stations{i1 + 1, 5}]; %#ok<AGROW>

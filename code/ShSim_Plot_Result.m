@@ -80,7 +80,7 @@ switch type
         lSize = 2;
 end
 % scrn= get(0, 'ScreenSize');
-[sections, route, profile] = ShSim_Read_trackdata(input_data.track_file, vehicle, sim_config); %#ok<ASGLU>
+[sections, route, profile] = ShSim_Read_Route(input_data.track_file, vehicle, sim_config); %#ok<ASGLU>
 offset = [0, 0];
 if figs(1) % Speed vs Distance
     nFigs = [nFigs, 100];

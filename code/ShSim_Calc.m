@@ -92,7 +92,7 @@ if isfield(data, 'parameter')
 end
 
 if exist(data.track_file, 'file')
-    [trackdata, routedata, routeProfile] = ShSim_Read_trackdata(data.track_file, locVehicle, sim_config);
+    [trackdata, routedata, routeProfile] = ShSim_Read_Route(data.track_file, locVehicle, sim_config);
     if isempty(trackdata)
         return
     end
@@ -218,31 +218,33 @@ for ii = data.sections
                 ShSim_CalcSeg(revTrack, vehicle, sim_config, time_dep, thermal_in, tRoutedata, gradientdata, data, hwb);
         end
         if v_cut > 0
-            v_cut = v_cut + routedata.ATO_SpdMgn / 3.6;
-            track = trackdata(ii).track;
+            v_cut = v_cut + routedata.ATO_SpdMgn;
+            track = routedata.track;
             b = find(track(:, 1) < d_cut(1) / 1000, 1, 'last');
             if ~isempty(b)
                 r1 = track(b, :); 
                 r1(1, 1) = d_cut(1) / 1000;
-                r1(1, 2) = v_cut * 3.6;
+                r1(1, 2) = v_cut;
                 track = [track(1:b, :); r1; track(b + 1:end, :)];
+                trackdata(ii).to_track = trackdata(ii).to_track + 1;
             else
-                track(1, 2) = v_cut * 3.6;
+                track(1, 2) = v_cut;
                 b = 0;
             end
             d_end = (d_cut(2) + vehicle.unitLength * vehicle.nUnits) / 1000;
             c = find(track(:, 1) < d_end, 1, 'last');
             r2 = track(c, :);
-            if c < size(track, 1) && track(c, 2) > v_cut * 3.6
+            if c < size(track, 1) && track(c, 2) > v_cut
                 r2(1, 1) = d_end;
-                r2(1, 2) = v_cut * 3.6;
+                r2(1, 2) = v_cut;
                 r2(1, 4) = track(c, 4) + track(c, 5) * (r2(1, 1) - track(c, 1));
                 r2(1, 6) = track(c, 6) + track(c, 5) * (r2(1, 1) - track(c, 1));
                 track = [track(1:c, :); r2; track(c + 1:end, :)];
+                trackdata(ii).to_track = trackdata(ii).to_track + 1;
             end
-            fprintf(['Speed: ', num2str(v_cut * 3.6), ' km/h between ', num2str(d_cut(1) / 1000), ' - ', num2str(d_end), newline])
-            track(b + 1:c, 2) = min(track(b + 1:c, 2), v_cut * 3.6);
-            trackdata(ii).track = track;
+            fprintf(['Speed: ', num2str(v_cut), ' m/s between ', num2str(d_cut(1) / 1000), ' - ', num2str(d_end), newline])
+            track(b + 1:c, 2) = min(track(b + 1:c, 2), v_cut);
+            routedata.track = track;
         end
     end
     if data.doOptimise(1) % 0 = no optimisation, 1 = ATO_SpdMax, 2 = ATO_InitBrkSpd, 3 = ATO_TBC
@@ -251,13 +253,13 @@ for ii = data.sections
                 par{1} = 'ATO_SpdMax';
                 orgval = GetValues(par, routedata);
                 if routedata.(par{1}) == inf
-                    routedata.(par{1}) = max(r_org.timedata(:, 3)) * 3.6; % vehicle.vMax*3.6;
+                    routedata.(par{1}) = max(r_org.timedata(:, 3)); % vehicle.vMax*3.6;
                 end
             case 2
                 par{1} = 'ATO_InitBrkSpd';
                 orgval = GetValues(par, routedata);
                 if routedata.(par{1}) == inf
-                    routedata.(par{1}) = max(r_org.timedata(:, 3)) * 3.6; % vehicle.vMax*3.6;
+                    routedata.(par{1}) = max(r_org.timedata(:, 3)); % vehicle.vMax*3.6;
                 end
             case 3
                 par{1} = 'ATO_TBC';
@@ -266,20 +268,20 @@ for ii = data.sections
                 par{1} = 'ATO_V1';
                 par{2} = 'ATO_V2';
                 orgval = GetValues(par, routedata);
-                routedata.ATO_V1 = max(r_org.timedata(:, 3)) * 3.6;
+                routedata.ATO_V1 = max(r_org.timedata(:, 3));
                 routedata.ATO_V2 = data.doOptimise(2) * routedata.ATO_V1;
             case 5 % ATO_SpdMax & ATO_InitBrkSpd
                 par{1} = 'ATO_SpdMax';
                 par{2} = 'ATO_InitBrkSpd';
                 orgval = GetValues(par, routedata);
-                routedata.ATO_InitBrkSpd = max(r_org.timedata(:, 3)) * 3.6;
+                routedata.ATO_InitBrkSpd = max(r_org.timedata(:, 3));
                 routedata.ATO_SpdMax = routedata.ATO_InitBrkSpd * data.doOptimise(2);
             case 6 % ATO_V1 & ATO_V2 & ATO_InitBrkSpd
                 par{1} = 'ATO_V1';
                 par{2} = 'ATO_V2';
                 par{3} = 'ATO_InitBrkSpd';
                 orgval = GetValues(par, routedata);
-                routedata.ATO_InitBrkSpd = max(r_org.timedata(:, 3)) * 3.6;
+                routedata.ATO_InitBrkSpd = max(r_org.timedata(:, 3));
                 routedata.ATO_V1 = routedata.ATO_InitBrkSpd * data.doOptimise(3);
                 routedata.ATO_V2 = routedata.ATO_V1 * data.doOptimise(2);
             case 7 % User defined

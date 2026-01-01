@@ -28,7 +28,7 @@ switch vehicle_data.MaxSpdUnit
         spd_scale = vehicle_data.gearRatio * vehicle_data.nPoles / (ws{vehicle_data.ws_selection} * pi * 2);
 end
 vcl.vMax = vehicle_data.vMax / spd_scale;
-vcl.unitLength = replaceifempty(vehicle_data.vMax, 0);
+vcl.unitLength = replaceifempty(vehicle_data.unitLength, 0);
 vcl.max_acc = replaceifempty(vehicle_data.max_acc, inf);
 vcl.jerkrateT = replaceifempty(vehicle_data.jerkrateT, inf);
 vcl.AccMethod = vehicle_data.AccMethod - 1;
@@ -168,7 +168,7 @@ vcl.OVClevel = replaceifempty(vehicle_data.OVClevel, vcl.U_Line_Nom);
 vcl.OVCMethod = vehicle_data.OVCMethod;
 vcl.R_ConCable = replaceifempty(vehicle_data.R_ConCable / 1000, 0);
 vcl.rLineInd = replaceifempty(vehicle_data.rLineInd / 1000, 0);
-vcl.MT_ratio = replaceifempty(vehicle_data.MT_ratio, 0);
+vcl.MT_ratio = replaceifempty(vehicle_data.MT_ratio, 1);
 vcl.Trafo_FixLoss = replaceifempty(vehicle_data.Trafo_FixLoss / 100, 0);
 vcl.trafoIdleLoss = replaceifempty(vehicle_data.trafoIdleLoss * 1000, 0);
 vcl.trafoHarmonicLoss = replaceifempty(vehicle_data.trafoHarmonicLoss * 1000, 0);
@@ -212,11 +212,15 @@ end
 vcl.R_MotCable  = replaceifempty(vehicle_data.R_MotCable , 0) / 1000;
 
 % Converters
-vcl.swFqConv = replaceifempty(vehicle_data.swFqConv, 0);
-vcl.CONV_RLoss = replaceifempty(vehicle_data.CONV_RLoss, 0) / 1000;
-vcl.CONV_FLoss = replaceifempty(vehicle_data.CONV_FLoss, 0);
-vcl.CONV_FRLoss = replaceifempty(vehicle_data.CONV_FRLoss, 0) / 1e6;
-vcl.CONV_FixLoss = vehicle_data.CONV_FixLoss / 100;
+vcl.swFqConv = vehicle_data.swFqConv;
+vcl.CONV_RLoss = vehicle_data.CONV_RLoss / 1000;
+vcl.CONV_FLoss = vehicle_data.CONV_FLoss;
+vcl.CONV_FRLoss = vehicle_data.CONV_FRLoss / 1e6;
+if isempty([vcl.swFqConv, vcl.CONV_RLoss, vcl.CONV_FLoss, vcl.CONV_FRLoss])
+    vcl.CONV_FixLoss = replaceifempty(vehicle_data.CONV_FixLoss, 0) / 100;
+else
+    vcl.CONV_FixLoss = [];
+end
 
 vcl.INV_RLoss = replaceifempty(vehicle_data.INV_RLoss, 0) / 1000;
 vcl.INV_FLoss = replaceifempty(vehicle_data.INV_FLoss, 0);
@@ -235,6 +239,11 @@ if n > 1
 else
     vcl.nModesInvMotor = [];
     vcl.FreqInvMotor = [];
+end
+if isempty([vcl.asyncSwFqInvMotor, vcl.asyncSwFqInvGenerator, vcl.FreqInvMotor, vcl.INV_RLoss, vcl.INV_FLoss, vcl.INV_FRLoss])
+    vcl.INV_FixLoss = replaceifempty(vcl.INV_FixLoss, 0);
+else
+    vcl.INV_FixLoss = [];
 end
 % vcl.nModesInvMotor = [vehicle_data.MotorPulseData{:, 1}];
 % vcl.FreqInvMotor = [];
